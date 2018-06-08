@@ -6,43 +6,9 @@ var SPACE = 32;
 var HEIGHT = 480;
 var WIDTH = 640;
 
-function init() {
-  var score = 0;
-  var keys = {};
-  var shootCounter = 0;
-  var stage = new createjs.Stage("demoCanvas");
-  var enemies = new createjs.Container();
+function BulletManager(stage) {
   var bullets = new createjs.Container();
-
-  var bg1 = new createjs.Bitmap("img/bg.png");
-  var bg2 = new createjs.Bitmap("img/bg.png");
-  bg2.x = WIDTH;
-  stage.addChild(bg1, bg2);
-  stage.addChild(enemies);
-  stage.addChild(bullets);
-  
-  var scoreText = new createjs.Text('0', 'bold 20px Courier New', '#FFFFFF');
-  scoreText.maxWidth = 1000;
-  scoreText.y = 10;
-  scoreText.x = 10;
-  stage.addChild(scoreText)
-
-  var dolphinData = {
-    images: ["img/dolphin2.png"],
-    frames: {width:150, height:98},
-    framerate: 12,
-  };
-  var dolphinSheet = new createjs.SpriteSheet(dolphinData);
-  var dolphin = new createjs.Sprite(dolphinSheet);
-  dolphin.gotoAndPlay(0);
-  stage.addChild(dolphin);
-
-  var fish1Data = {
-    images: ["img/fish2.png"],
-    frames: {width:50, height:33},
-    framerate: 12,
-  };
-  var fish1Sheet = new createjs.SpriteSheet(fish1Data);
+  this.bullets = bullets;
 
   var bulletData = {
     images: ["img/bullet.png"],
@@ -51,27 +17,163 @@ function init() {
   };
   var bulletSheet = new createjs.SpriteSheet(bulletData);
 
+  this.addBullet = function(x, y) {
+    var b = new createjs.Sprite(bulletSheet);
+    b.x = x;
+    b.y = y;
+
+    b.gotoAndPlay(0);
+    bullets.addChild(b);
+    stage.update();
+  }
+
+  this.update = function() {
+    // update bullets
+    for(var j = 0; j < bullets.children.length; j++) {
+      bullets.children[j].x += 20;
+
+      // remove offstage bullets 
+      if(bullets.children[j].x > WIDTH + 10) {
+        bullets.removeChildAt(j);
+      }
+    }
+  }
+
+}
+
+function Dolphin(stage) {
+  var self = this;
+  this.HEIGHT = 98;
+  this.WIDTH = 150;
+
+  var bulletMgr = new BulletManager(stage);
+  this.bulletMgr = bulletMgr;
+
+  stage.addChild(this.bulletMgr.bullets);
+
+  var dolphinData = {
+    images: ["img/dolphin2.png"],
+    frames: {width:this.WIDTH, height:this.HEIGHT},
+    framerate: 12,
+  };
+  var dolphinSheet = new createjs.SpriteSheet(dolphinData);
+  var dolphin = new createjs.Sprite(dolphinSheet);
+  dolphin.gotoAndPlay(0);
+
+  this.sprite = dolphin;
+
+  function shoot() {
+    bulletMgr.addBullet(
+      dolphin.x + self.WIDTH,
+      dolphin.y + self.HEIGHT/2
+    );
+  }
+
+  var shootCounter = 0;
+
+  this.update = function(keys) {
+    // move dolphin
+    if (keys[LEFT])  dolphin.x -= 15;
+    if (keys[UP])    dolphin.y -= 15;
+    if (keys[RIGHT]) dolphin.x += 15;
+    if (keys[DOWN])  dolphin.y += 15;
+
+    // wall collision
+    if (dolphin.x < -this.WIDTH/2) dolphin.x = -this.WIDTH/2;
+    if (dolphin.y < -this.HEIGHT/2) dolphin.y = -this.HEIGHT/2;
+    if (dolphin.x > WIDTH - this.WIDTH/2) dolphin.x = WIDTH - this.WIDTH/2;
+    if (dolphin.y > HEIGHT - this.HEIGHT/2) dolphin.y = HEIGHT - this.HEIGHT/2;
+
+    // shooting
+    if (keys[SPACE]) {
+      if (shootCounter == 0) shoot()
+      shootCounter = (shootCounter + 1) % 3;
+    } else {
+      shootCounter = 0;
+    }
+
+    bulletMgr.update();
+  }
+
+}
+
+function Fish() {
+  this.HEIGHT = 33;
+  this.WIDTH = 50;
+
+  var fish1Data = {
+    images: ["img/fish2.png"],
+    frames: {width:50, height:33},
+    framerate: 12,
+  };
+  var fish1Sheet = new createjs.SpriteSheet(fish1Data);
+  var sprite = new createjs.Sprite(fish1Sheet);
+  sprite.gotoAndPlay(0);
+
+  this.sprite = sprite;
+}
+
+function EnemyManager(stage) {
+  var enemies = new createjs.Container();
+  this.enemies = enemies;
+
   function addEnemy() {
-    var fish1 = new createjs.Sprite(fish1Sheet);
-    fish1.x = WIDTH - 50; 
-    fish1.y = Math.floor(Math.random() * (HEIGHT - 33)) + 33;
-    fish1.gotoAndPlay(0);
-    enemies.addChild(fish1);
+    var fish1 = new Fish(); 
+    fish1.sprite.x = WIDTH - 50; 
+    fish1.sprite.y = Math.floor(Math.random() * (HEIGHT - 33)) + 33;
+    enemies.addChild(fish1.sprite);
     stage.update();
   }
 
   var timerSource = setInterval(addEnemy, 1000); 
 
-  function shoot() {
-    var b = new createjs.Sprite(bulletSheet);
-    b.gotoAndPlay(0);
+  this.update = function() {
+    // update enemies
+    for(var j = 0; j < this.enemies.children.length; j++) {
+      this.enemies.children[j].x -= 5;
 
-    b.x = dolphin.x + 150;
-    b.y = dolphin.y + 49;
-
-    bullets.addChild(b);
-    stage.update();
+      // remove offstage enemies
+      if(this.enemies.children[j].x < -25)
+        this.enemies.removeChildAt(j);
+    }
   }
+}
+
+function ScoreManager(stage) {
+  var score = 0;
+  this.score = score;
+  var scoreText = new createjs.Text('0', 'bold 20px Courier New', '#FFFFFF');
+  scoreText.maxWidth = 1000;
+  scoreText.y = 10;
+  scoreText.x = 10;
+  this.scoreText = scoreText;
+
+  this.add = function(amt) {
+    score += amt;
+  }
+  
+  this.update = function() {
+    scoreText.text = score; 
+  }
+}
+
+function init() {
+  var keys = {};
+  var stage = new createjs.Stage("demoCanvas");
+
+  var bg1 = new createjs.Bitmap("img/bg.png");
+  var bg2 = new createjs.Bitmap("img/bg.png");
+  bg2.x = WIDTH;
+  stage.addChild(bg1, bg2);
+
+  var enemyMgr = new EnemyManager(stage);
+  stage.addChild(enemyMgr.enemies);
+  
+  var scoreMgr = new ScoreManager(stage);
+  stage.addChild(scoreMgr.scoreText);
+
+  var dolphin = new Dolphin(stage);
+  stage.addChild(dolphin.sprite);
 
   this.document.onkeydown = keydown;
   this.document.onkeyup = keyup;
@@ -79,7 +181,7 @@ function init() {
   createjs.Ticker.addEventListener("tick", handleTick);
 
   function keydown(event) {
-    keys[event.keyCode] = true
+    keys[event.keyCode] = true;
   }
 
   function keyup(event) {
@@ -93,63 +195,28 @@ function init() {
     if (bg1.x < -WIDTH) bg1.x = WIDTH;
     if (bg2.x < -WIDTH) bg2.x = WIDTH;
 
-    // move dolphin
-    if (keys[LEFT])  dolphin.x -= 15;
-    if (keys[UP])    dolphin.y -= 15;
-    if (keys[RIGHT]) dolphin.x += 15;
-    if (keys[DOWN])  dolphin.y += 15;
-    // wall collision
-    if (dolphin.x < -30) dolphin.x = -30;
-    if (dolphin.y < -30) dolphin.y = -30;
-    if (dolphin.x > WIDTH - 150 + 30) dolphin.x = WIDTH - 150 + 30;
-    if (dolphin.y > HEIGHT - 98 + 30) dolphin.y = HEIGHT - 98 + 30;
-    
-    // update enemies
-    for(var j = 0; j < enemies.children.length; j++) {
-      enemies.children[j].x -= 5;
+    enemyMgr.update();
+    dolphin.update(keys);
 
-      // remove offstage enemies
-      if(enemies.children[j].x < -25)
-        enemies.removeChildAt(j);
-    }
-
-    // shoot!
-    if (keys[SPACE]) {
-      if (shootCounter == 0) shoot()
-      shootCounter = (shootCounter + 1) % 3;
-    } else {
-      shootCounter = 0
-    }
-
-    // update bullets
-    for(var j = 0; j < bullets.children.length; j++) {
-      bullets.children[j].x += 20;
-
-      // remove offstage bullets 
-      if(bullets.children[j].x > WIDTH + 10)
-        bullets.removeChildAt(j);
-    }
-
-    for (var j = 0; j < bullets.children.length; j++) {
-      // test for enemy/bullet collision
-      for (var k = 0; k < enemies.children.length; k++) {
+    // test for enemy/bullet collision
+    for (var j = 0; j < dolphin.bulletMgr.bullets.children.length; j++) {
+      for (var k = 0; k < enemyMgr.enemies.children.length; k++) {
         // reference is in center of bullet, so give +/- 5 radius
-        if (bullets.children[j].y + 5 > enemies.children[k].y - 5 && 
-            bullets.children[j].y + 5 < enemies.children[k].y + 33 + 5 &&
-            bullets.children[j].x + 5 > enemies.children[k].x - 5 &&
-            bullets.children[j].x + 5 < enemies.children[k].x + 50 + 5
+        if (dolphin.bulletMgr.bullets.children[j].y + 5 > enemyMgr.enemies.children[k].y - 5 && 
+            dolphin.bulletMgr.bullets.children[j].y + 5 < enemyMgr.enemies.children[k].y + 33 + 5 &&
+            dolphin.bulletMgr.bullets.children[j].x + 5 > enemyMgr.enemies.children[k].x - 5 &&
+            dolphin.bulletMgr.bullets.children[j].x + 5 < enemyMgr.enemies.children[k].x + 50 + 5
         ) { 
-          bullets.removeChildAt(j); 
-          enemies.removeChildAt(k); 
+          dolphin.bulletMgr.bullets.removeChildAt(j); 
+          enemyMgr.enemies.removeChildAt(k); 
           stage.update(); 
-          score += 10;
+          scoreMgr.add(10);
           break;
         }
       }
     }
 
-    scoreText.text = score; 
-
+    scoreMgr.update();
     stage.update(event);
   }
 }
