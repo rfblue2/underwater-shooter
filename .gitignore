@@ -2,3 +2,4 @@
 *.svg
 *.xcf
 *.swp
+node_modules/
