@@ -31,5 +31,11 @@ function BulletManager(stage) {
     }
   }
 
+  this.reset = function() {
+    for (var i = 0; i < bullets.children.length; i++) {
+      bullets.removeChildAt(i);
+    }
+  }
+
 }
 

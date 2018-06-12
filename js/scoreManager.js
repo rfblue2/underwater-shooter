@@ -14,5 +14,10 @@ function ScoreManager(stage) {
   this.update = function() {
     scoreText.text = score; 
   }
+
+  this.reset = function() {
+    score = 0;
+    scoreText.text = "0"
+  }
 }
 

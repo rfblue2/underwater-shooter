@@ -6,8 +6,6 @@ function Dolphin(stage) {
   var bulletMgr = new BulletManager(stage);
   this.bulletMgr = bulletMgr;
 
-  stage.addChild(this.bulletMgr.bullets);
-
   var dolphinData = {
     images: ["img/dolphin2.png"],
     frames: {width:this.WIDTH, height:this.HEIGHT},
@@ -50,6 +48,10 @@ function Dolphin(stage) {
     }
 
     bulletMgr.update();
+  }
+
+  this.reset = function() {
+    bulletMgr.reset();
   }
 
 }

@@ -10,7 +10,11 @@ function EnemyManager(stage) {
     stage.update();
   }
 
-  var timerSource = setInterval(addEnemy, 1000); 
+  var timerSource = 0;
+
+  this.start = function() {
+    timerSource = setInterval(addEnemy, 1000); 
+  }
 
   this.update = function() {
     // update enemies
@@ -20,6 +24,17 @@ function EnemyManager(stage) {
       // remove offstage enemies
       if(this.enemies.children[j].x < -25)
         this.enemies.removeChildAt(j);
+    }
+  }
+
+  this.stop = function() {
+    clearInterval(timerSource);
+  }
+
+
+  this.reset = function() {
+    for (var i = 0; i < this.enemies.children.length; i++) {
+      this.enemies.removeChildAt(i);
     }
   }
 }
