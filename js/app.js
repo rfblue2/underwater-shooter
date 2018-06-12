@@ -68,10 +68,10 @@ function init() {
       }
 
       // test for enemy player collision
-      if (dolphin.sprite.y + dolphin.HEIGHT/2 > enemyMgr.enemies.children[k].y &&
-          dolphin.sprite.y + dolphin.HEIGHT/2 < enemyMgr.enemies.children[k].y + 33 &&
-          dolphin.sprite.x + dolphin.WIDTH/2 > enemyMgr.enemies.children[k].x &&
-          dolphin.sprite.x + dolphin.WIDTH/2 < enemyMgr.enemies.children[k].x + 50
+      if (dolphin.sprite.y + 5 < enemyMgr.enemies.children[k].y + 33 &&
+          dolphin.sprite.y + dolphin.HEIGHT - 5 > enemyMgr.enemies.children[k].y &&
+          dolphin.sprite.x + 5 < enemyMgr.enemies.children[k].x + 50 &&
+          dolphin.sprite.x + dolphin.WIDTH - 5 > enemyMgr.enemies.children[k].x 
       ) {
         console.log("hit");
         enemyMgr.enemies.removeChildAt(k);
