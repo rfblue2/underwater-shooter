@@ -21,6 +21,9 @@ function init() {
   var scoreMgr = new ScoreManager(stage);
   stage.addChild(scoreMgr.scoreText);
 
+  var lifeMgr = new LifeManager(stage, WIDTH - 16*3 - 10, HEIGHT - 16 - 10);
+  stage.addChild(lifeMgr.lives);
+
   var dolphin = new Dolphin(stage);
   stage.addChild(dolphin.sprite);
 
@@ -47,9 +50,9 @@ function init() {
     enemyMgr.update();
     dolphin.update(keys);
 
-    // test for enemy/bullet collision
-    for (var j = 0; j < dolphin.bulletMgr.bullets.children.length; j++) {
-      for (var k = 0; k < enemyMgr.enemies.children.length; k++) {
+    for (var k = 0; k < enemyMgr.enemies.children.length; k++) {
+      // test for enemy/bullet collision
+      for (var j = 0; j < dolphin.bulletMgr.bullets.children.length; j++) {
         // reference is in center of bullet, so give +/- 5 radius
         if (dolphin.bulletMgr.bullets.children[j].y + 5 > enemyMgr.enemies.children[k].y - 5 && 
             dolphin.bulletMgr.bullets.children[j].y + 5 < enemyMgr.enemies.children[k].y + 33 + 5 &&
@@ -61,6 +64,20 @@ function init() {
           stage.update(); 
           scoreMgr.add(10);
           break;
+        }
+      }
+
+      // test for enemy player collision
+      if (dolphin.sprite.y + dolphin.HEIGHT/2 > enemyMgr.enemies.children[k].y &&
+          dolphin.sprite.y + dolphin.HEIGHT/2 < enemyMgr.enemies.children[k].y + 33 &&
+          dolphin.sprite.x + dolphin.WIDTH/2 > enemyMgr.enemies.children[k].x &&
+          dolphin.sprite.x + dolphin.WIDTH/2 < enemyMgr.enemies.children[k].x + 50
+      ) {
+        console.log("hit");
+        enemyMgr.enemies.removeChildAt(k);
+        var dead = lifeMgr.hurt();
+        if (dead) {
+          alert("Game Over");
         }
       }
     }
