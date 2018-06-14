@@ -1,11 +1,11 @@
 function Fish() {
-  this.HEIGHT = 33;
-  this.WIDTH = 50;
+  this.HEIGHT = 32;
+  this.WIDTH = 32;
 
   var fish1Data = {
-    images: ["img/fish2.png"],
-    frames: {width:50, height:33},
-    framerate: 12,
+    images: ["img/fish1.png"],
+    frames: {width:this.WIDTH, height:this.HEIGHT},
+    framerate: 4,
   };
   var fish1Sheet = new createjs.SpriteSheet(fish1Data);
   var sprite = new createjs.Sprite(fish1Sheet);
