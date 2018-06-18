@@ -3,10 +3,11 @@ function EnemyManager(stage) {
   this.enemies = enemies;
 
   function addEnemy() {
-    var fish1 = new Fish(); 
-    fish1.sprite.x = WIDTH - 50; 
-    fish1.sprite.y = Math.floor(Math.random() * (HEIGHT - 33)) + 33;
-    enemies.addChild(fish1.sprite);
+    var NUM_ENEMIES = 31;
+    var enemy = new Enemy('e' + Math.floor(Math.random() * NUM_ENEMIES));
+    enemy.sprite.x = WIDTH - 50; 
+    enemy.sprite.y = Math.floor(Math.random() * (HEIGHT - 33)) + 33;
+    enemies.addChild(enemy.sprite);
     stage.update();
   }
 
@@ -22,7 +23,7 @@ function EnemyManager(stage) {
       this.enemies.children[j].x -= 5;
 
       // remove offstage enemies
-      if(this.enemies.children[j].x < -25)
+      if(this.enemies.children[j].x < -25) 
         this.enemies.removeChildAt(j);
     }
   }

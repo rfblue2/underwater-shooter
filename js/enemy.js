@@ -1,16 +1,24 @@
-function Fish() {
-  this.HEIGHT = 32;
-  this.WIDTH = 32;
+var enemySheet;
+var enemyData = {}
 
-  var fish1Data = {
-    images: ["img/fish1.png"],
-    frames: {width:this.WIDTH, height:this.HEIGHT},
-    framerate: 4,
-  };
-  var fish1Sheet = new createjs.SpriteSheet(fish1Data);
-  var sprite = new createjs.Sprite(fish1Sheet);
-  sprite.gotoAndPlay(0);
+$.getJSON("img/fishes.json", function(json) {
+    enemySheet = new createjs.SpriteSheet(json);
+    for(var sprite in json.animations){
+      enemyData[sprite] = {
+        h: json.frames[json.animations[sprite].frames[0]][3],
+        w: json.frames[json.animations[sprite].frames[0]][2],
+      }
+    }
+});
 
+function Enemy(name) {
+  var enemy = enemyData[name];
+  var sprite = new createjs.Sprite(enemySheet, name);
   this.sprite = sprite;
+
+  this.HEIGHT = enemy.h;
+  this.WIDTH = enemy.w;
+
+  this.sprite.gotoAndPlay(name);
 }
 
